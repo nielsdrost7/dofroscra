@@ -1,0 +1,8 @@
+BusyBox v1.28.4 (2018-05-30 10:45:57 UTC) multi-call binary.
+
+Usage: addgroup [-g GID] [-S] [USER] GROUP
+
+Add a group or add a user to a group
+
+        --gid GID  Group id
+        --system   Create a system group

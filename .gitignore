@@ -1,0 +1,6 @@
+.idea
+.DS_store
+.phpmyadmin/tmp/twig/*
+minio/*
+
+docker-compose.override.yml

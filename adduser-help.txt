@@ -1,0 +1,8 @@
+        --home DIR           Home directory
+        --gecos GECOS        GECOS field
+        --shell SHELL        Login shell
+        --ingroup GRP        Group (by name)
+        --system             Create a system user
+        --disabled-password  Don't assign a password
+        --no-create-home     Don't create home directory
+        --uid UID            User id

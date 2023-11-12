@@ -1,0 +1,53 @@
+127.0.0.1       bpmcrm.local
+127.0.0.1       kwd.local
+127.0.0.1       boilwd.local
+127.0.0.1       coreuilaravel.local
+127.0.0.1       cruilrvl.local
+127.0.0.1       coreuiprime.local
+127.0.0.1       coreuipro.local
+127.0.0.1       demoappl.local
+127.0.0.1       dolibarr.local
+127.0.0.1       growio.local
+127.0.0.1       multicrm.local
+127.0.0.1       multifront.local
+127.0.0.1       invninjdevel.local
+127.0.0.1       invninj.local
+127.0.0.1       ivplfusinv.local
+
+127.0.0.1       ivplv1.local
+127.0.0.1       ivplvtight.local
+127.0.0.1       ivplv2.local
+127.0.0.1       ivplv2.test
+127.0.0.1       ivplcoreui.local
+127.0.0.1       invnex.local
+127.0.0.1       ivplsecret.local
+127.0.0.1       newbase.local
+
+#127.0.0.1      offective.local
+#127.0.0.1      perfex.local
+127.0.0.1       suitecrm.local
+127.0.0.1       windtail.local
+#127.0.0.1      perfex.local
+#127.0.0.1      perfex.local
+
+
+#127.0.0.1      perfex.local
+#127.0.0.1      perfex.local
+127.0.0.1       twlrvl.local
+
+127.0.0.1       ipfnu.local
+127.0.0.1       nuc.local
+
+
+127.0.0.1       checkpoint.local
+127.0.0.1       infyorig.local
+127.0.0.1       cleopatra.local
+127.0.0.1       excoreui.local
+127.0.0.1       ivplblue.local
+127.0.0.1       lrvlboil.local
+127.0.0.1       boiltail.local
+127.0.0.1       meravel.local
+127.0.0.1       youllo.local
+127.0.0.1       modulrcoreui.local
+
+#127.0.0.1      quicklocal.local

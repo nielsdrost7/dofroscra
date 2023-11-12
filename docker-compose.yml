@@ -1,0 +1,165 @@
+version: "3"
+
+volumes:
+  database:
+    driver: "local"
+  nginx_logs:
+    driver: "local"
+  redis:
+    driver: "local"
+
+services:
+### Workspace Utilities ##################################
+  workspace:
+    container_name: dofroscra_workspace
+    build:
+      context: ./.docker/workspace
+    env_file:
+      - ./.env.docker
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    restart: unless-stopped
+    volumes:
+      - ${APP_CODE_PATH_HOST}:/var/www/projects
+      - /etc/localtime:/etc/localtime:ro
+    tty: true
+    environment:
+      - PHP_IDE_CONFIG=serverName=dofroscra
+    dns: 8.8.8.8
+    networks:
+      dofroscra:
+        ipv4_address: 172.49.0.10
+    #links:
+    #  - docker-in-docker
+
+### PHP-FPM ##############################################
+  php-fpm:
+    container_name: dofroscra_php
+    build:
+      context: ./.docker/php81
+    env_file:
+      - ./.env.docker
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    restart: unless-stopped
+    volumes:
+      #- ./.docker/php81/php81.ini:/usr/local/etc/php/php.ini
+      - ${APP_CODE_PATH_HOST}:/var/www/projects
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "9000:9000"
+    expose:
+      - "9005"
+    environment:
+      - PHP_IDE_CONFIG=serverName=dofroscra
+    depends_on:
+      - workspace
+    dns: 8.8.8.8
+    networks:
+      dofroscra:
+        ipv4_address: 172.49.0.11
+    links:
+      - db
+      - workspace
+      - redis
+      #- docker-in-docker
+
+### NGINX Server #########################################
+  nginx:
+    container_name: dofroscra_nginx
+    build:
+      context: ./.docker/nginx
+    env_file:
+      - ./.env.docker
+    restart: unless-stopped
+    volumes:
+      - ${APP_CODE_PATH_HOST}:/var/www/projects
+      - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
+      - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - php-fpm
+    dns: 8.8.8.8
+    networks:
+      dofroscra:
+        ipv4_address: 172.49.0.12
+    links:
+      - php-fpm
+
+### MariaDB ##############################################
+  db:
+    container_name: tryagain_db
+    image: mysql:5.7
+    restart: unless-stopped
+    command: --sql_mode="NO_ENGINE_SUBSTITUTION"
+    volumes:
+      - ./.data/mysql:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_PASSWORD=test
+      - MYSQL_DATABASE=ivplcoreui_db
+      - MYSQL_TCP_PORT=3306
+    ports:
+      - "3306:3306"
+    networks:
+      dofroscra:
+        ipv4_address: 172.49.0.13
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "-test", "ping" ]
+
+### Redis ################################################
+  redis:
+    container_name: dofroscra_redis
+    build:
+      context: ./.docker/redis
+    env_file:
+      - ./.env.docker
+    restart: unless-stopped
+    volumes:
+      - ${DATA_PATH_HOST}/redis:/data
+    ports:
+      - "${REDIS_PORT}:6379"
+    command: redis-server --appendonly yes
+    networks:
+      dofroscra:
+        ipv4_address: 172.49.0.15
+
+### phpMyAdmin ###########################################
+  phpmyadmin:
+    container_name: tryagain_dbadmin
+    image: phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - db
+    links:
+      - db
+    volumes:
+      - ./.docker/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
+      - ./resources/databases:/var/www/html/tmp/dofroscra_databases
+    environment:
+      - PMA_HOST=tryagain_db
+      - PMA_ROOT_PASSWORD=root
+      - PMA_USER=test
+      - PMA_PASSWORD=test
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_PASSWORD=test
+      - MYSQL_DATABASE=ivplcoreui_db
+      - MAX_EXECUTION_TIME=600
+      - MEMORY_LIMIT=256M
+      - UPLOAD_LIMIT=2G
+    ports:
+      - 8026:80
+    networks:
+      dofroscra:
+        ipv4_address: 172.49.0.16
+
+networks:
+  dofroscra:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.49.0.0/17
