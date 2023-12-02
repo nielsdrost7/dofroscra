@@ -1,0 +1,2 @@
+172.49.0.1 - - [09/Aug/2023:10:31:41 +0200] "GET / HTTP/1.1" 200 5720 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+172.49.0.1 - - [09/Aug/2023:10:31:42 +0200] "GET /favicon.ico HTTP/1.1" 200 0 "http://kwd.local/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"

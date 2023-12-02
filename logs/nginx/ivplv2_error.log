@@ -1,0 +1,2 @@
+2023/09/17 12:34:34 [error] 20#20: *1 directory index of "/var/www/projects/ivplv2/public/docs/" is forbidden, client: 172.49.0.1, server: ivplv2.local, request: "GET /docs/ HTTP/1.1", host: "ivplv2.local"
+2023/09/17 12:34:51 [error] 20#20: *2 directory index of "/var/www/projects/ivplv2/public/apidocs/" is forbidden, client: 172.49.0.1, server: ivplv2.local, request: "GET /apidocs/ HTTP/1.1", host: "ivplv2.local"

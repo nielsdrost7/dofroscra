@@ -1,0 +1,3 @@
+2023/07/29 22:40:05 [error] 20#20: *1 directory index of "/var/www/projects/windtail/public_html/" is forbidden, client: 172.49.0.1, server: windtail.local, request: "GET / HTTP/1.1", host: "windtail.local"
+2023/07/29 22:40:44 [error] 20#20: *1 directory index of "/var/www/projects/windtail/public_html/" is forbidden, client: 172.49.0.1, server: windtail.local, request: "GET / HTTP/1.1", host: "windtail.local"
+2023/07/29 22:42:58 [error] 20#20: *1 directory index of "/var/www/projects/windtail/public_html/" is forbidden, client: 172.49.0.1, server: windtail.local, request: "GET / HTTP/1.1", host: "windtail.local"
