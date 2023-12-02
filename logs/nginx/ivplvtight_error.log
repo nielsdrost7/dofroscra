@@ -1,1 +1,0 @@
-2023/07/23 19:28:33 [error] 20#20: *63 recv() failed (104: Connection reset by peer) while reading response header from upstream, client: 172.49.0.1, server: ivplvtight.local, request: "GET /sessions/login HTTP/1.1", upstream: "fastcgi://172.49.0.11:9000", host: "ivplvtight.local"
