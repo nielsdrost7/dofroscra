@@ -22,6 +22,8 @@ services:
     volumes:
       - ${APP_CODE_PATH_HOST}:/var/www/projects
       - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "${WORKSPACE_VITE_PORT}:5173"
     tty: true
     environment:
       - PHP_IDE_CONFIG=serverName=dofroscra
