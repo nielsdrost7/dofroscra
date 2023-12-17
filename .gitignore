@@ -3,5 +3,5 @@
 .DS_store
 .phpmyadmin/tmp/twig/*
 minio/*
-
+logs/nginx/*
 docker-compose.override.yml
