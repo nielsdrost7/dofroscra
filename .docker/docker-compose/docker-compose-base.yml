@@ -1,0 +1,32 @@
+version: '3.7'
+
+services:
+  php-fpm:
+    image: docker.io/dofroscra/php-fpm-local:latest
+    build:
+      context: ../
+      dockerfile: ./.docker/php/fpm/Dockerfile
+      target: local
+      args:
+        - BASE_IMAGE=docker.io/dofroscra/php-base-local:latest
+        - TARGET_PHP_VERSION=8.1
+
+  php-worker:
+    image: docker.io/dofroscra/php-worker-local:latest
+    build:
+      context: ../
+      dockerfile: ./.docker/php-worker/Dockerfile
+      target: local
+      args:
+        - BASE_IMAGE=docker.io/dofroscra/php-base-local:latest
+        - PHP_WORKER_PROCESS_NUMBER=${PHP_WORKER_PROCESS_NUMBER:-4}
+
+  nginx:
+    image: docker.io/dofroscra/nginx-local:latest
+    build:
+      context: ../
+      dockerfile: ./.docker/nginx/Dockerfile
+      target: local
+      args:
+        - NGINX_VERSION=${NGINX_VERSION?}
+        - APP_CODE_PATH=${APP_CODE_PATH_CONTAINER?}

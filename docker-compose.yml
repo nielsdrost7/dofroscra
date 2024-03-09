@@ -1,0 +1,196 @@
+version: '3.7'
+
+volumes:
+  mysql:
+    name: mysql-local
+    driver: local
+  redis:
+    name: redis-local
+    driver: local
+
+services:
+  workspace:
+    container_name: dofroscra_workspace
+    build:
+      context: ./.docker/workspace
+      args:
+        - BASE_IMAGE=docker.io/dofroscra/php-base-local:latest
+        - APP_SSH_PASSWORD=${APP_SSH_PASSWORD?}
+        - ENV=local
+        - TARGET_PHP_VERSION=8.1
+        - APP_USER_ID=${APP_USER_ID}
+        - APP_GROUP_ID=${APP_GROUP_ID}
+        - APP_USER_NAME=${APP_USER_NAME}
+        - APP_GROUP_NAME=${APP_GROUP_NAME}
+        - APP_CODE_PATH=${APP_CODE_PATH_CONTAINER}
+    environment:
+      - PHP_IDE_CONFIG=serverName=dofroscra
+    volumes:
+      - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "${APPLICATION_SSH_HOST_PORT:-2222}:22"
+    tty: true
+    dns: 8.8.8.8
+    networks:
+      dofroscra:
+        ipv4_address: 172.20.0.10
+
+  php-fpm:
+    container_name: dofroscra_php
+    build:
+      context: ./.docker/php-fpm
+      args:
+        - TARGET_PHP_VERSION=8.1
+        - APP_USER_ID=${APP_USER_ID}
+        - APP_GROUP_ID=${APP_GROUP_ID}
+        - APP_USER_NAME=${APP_USER_NAME}
+        - APP_GROUP_NAME=${APP_GROUP_NAME}
+        - APP_CODE_PATH=${APP_CODE_PATH_CONTAINER}
+    expose:
+      - "9000"
+    environment:
+      - PHP_IDE_CONFIG=serverName=dofroscra
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+    networks:
+      dofroscra:
+        ipv4_address: 172.20.0.11
+
+  php-worker:
+    container_name: dofroscra_worker
+    build:
+      context: ./.docker/php-fpm
+      args:
+        - PHP_WORKER_PROCESS_NUMBER=${PHP_WORKER_PROCESS_NUMBER:-4}
+    environment:
+      - PHP_IDE_CONFIG=serverName=dofroscra
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+    dns: 8.8.8.8
+    networks:
+      dofroscra:
+        ipv4_address: 172.20.0.19
+
+  nginx:
+    container_name: dofroscra_web
+    build:
+      context: ./.docker/nginx
+      args:
+        - NGINX_VERSION=${NGINX_VERSION?}
+        - APP_CODE_PATH=${APP_CODE_PATH_CONTAINER?}
+    volumes:
+      - ${APP_CODE_PATH_HOST?}:${APP_CODE_PATH_CONTAINER?}
+      - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
+      - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
+    ports:
+      - "${NGINX_HOST_HTTP_PORT:-80}:80"
+      - "${NGINX_HOST_HTTPS_PORT:-443}:443"
+    dns: 8.8.8.8
+    networks:
+      dofroscra:
+        ipv4_address: 172.20.0.12
+    depends_on:
+      - php-fpm
+
+  mariadb:
+    container_name: dofroscra_db
+    build:
+      context: ./.docker/mariadb
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-application_db}
+      - MYSQL_USER=${MYSQL_USER:-application_user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD?}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD?}
+      - TZ=${TIMEZONE:-UTC}
+    volumes:
+      - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
+      - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
+    ports:
+      - "${MYSQL_HOST_PORT:-3306}:3306"
+    dns: 8.8.8.8
+    networks:
+      dofroscra:
+        ipv4_address: 172.20.0.13
+
+  redis:
+    image: redis:${REDIS_VERSION?}
+    volumes:
+      - ${DATA_PATH_HOST}/redis:/data
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    # @see https://stackoverflow.com/a/69498392/413531
+    command: >
+      --requirepass ${REDIS_PASSWORD?}
+    dns: 8.8.8.8
+    networks:
+      dofroscra:
+        ipv4_address: 172.20.0.15
+
+### Beanstalkd ###########################################
+  beanstalkd:
+    build: ./.docker/beanstalkd
+    ports:
+      - "${BEANSTALKD_HOST_PORT}:11300"
+    privileged: true
+    depends_on:
+      - php-fpm
+    networks:
+      dofroscra:
+        ipv4_address: 172.20.0.27
+
+    ### Beanstalkd Console ###################################
+  beanstalkd-console:
+    build: ./.docker/beanstalkd-console
+    ports:
+      - "${BEANSTALKD_CONSOLE_HOST_PORT}:2080"
+    depends_on:
+      - beanstalkd
+    networks:
+      dofroscra:
+        ipv4_address: 172.20.0.25
+
+  phpmyadmin:
+    container_name: dofroscra_dbadmin
+    image: phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+    links:
+      - mariadb
+    volumes:
+      - ./.docker/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
+      - ./databases:/var/www/html/tmp/dofroscra_databases
+    ports:
+      - ${PMA_PORT:-8037}:80
+    environment:
+      - PMA_HOST=dofroscra_db
+      - PMA_USER=${PMA_USER:-root}
+      - PMA_PASSWORD=${PMA_PASSWORD:-dofroscra}
+      - PMA_ROOT_PASSWORD=${PMA_USER:-root}
+      - PMA_MAX_EXECUTION_TIME=${PMA_MAX_EXECUTION_TIME:-600}
+      - PMA_MEMORY_LIMIT=${PMA_MEMORY_LIMIT:-256M}
+      - PMA_UPLOAD_LIMIT=${PMA_UPLOAD_LIMIT:-2G}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-application_db}
+      - MYSQL_USER=${MYSQL_USER:-application_user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD?}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD?}
+      - MAX_EXECUTION_TIME=600
+      - MEMORY_LIMIT=256M
+      - UPLOAD_LIMIT=2G
+    networks:
+      dofroscra:
+        ipv4_address: 172.20.0.16
+
+networks:
+  dofroscra:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/17
