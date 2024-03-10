@@ -115,12 +115,14 @@ COPY ./.bashrc /root/.bashrc
 # Wouldn't execute when added to the RUN statement in the above block
 # Source NVM when loading bash since ~/.profile isn't loaded on non-login shell
 RUN echo "" >> ~/.bashrc && \
+    echo "export PS1='\W '" >> ~/.bashrc && \
     echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc && \
     echo '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm' >> ~/.bashrc
 
 # Add NVM binaries to root's .bashrc
 USER root
 RUN echo "" >> ~/.bashrc && \
+    echo "export PS1='\W '" >> ~/.bashrc && \
     echo 'export NVM_DIR="/home/alpinehero/.nvm"' >> ~/.bashrc && \
     echo '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm' >> ~/.bashrc
 
@@ -129,11 +131,13 @@ USER alpinehero
 RUN [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && \
     curl -o- -L https://yarnpkg.com/install.sh | bash; \
     echo "" >> ~/.bashrc && \
+    echo "export PS1='\W '" >> ~/.bashrc && \
     echo 'export PATH="$HOME/.yarn/bin:$PATH"' >> ~/.bashrc
 
 # Add Yarn binaries to root's .bashrc
 USER root
 RUN echo "" >> ~/.bashrc && \
+    echo "export PS1='\W '" >> ~/.bashrc && \
     echo 'export YARN_DIR="/home/alpinehero/.yarn"' >> ~/.bashrc && \
     echo 'export PATH="$YARN_DIR/bin:$PATH"' >> ~/.bashrc
 
